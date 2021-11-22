@@ -1,0 +1,16 @@
+# OS Files
+.DS_Store
+
+# IDE
+.idea/
+.vscode
+
+# Sensitive files
+*.log
+*.sqlite
+*.sql
+*.xlsx
+.env
+env/
+env*
+docker/*/mount
