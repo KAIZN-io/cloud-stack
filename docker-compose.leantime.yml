@@ -1,0 +1,74 @@
+services:
+
+
+  leantime_db:
+    image: mariadb
+    command: --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", 'mysqladmin', 'ping', '-h', 'localhost', '-u', '$LEANTIME_DATABASE_USER', '-p$LEANTIME_DATABASE_PASSWORD' ]
+
+    environment:
+      TZ: ${TIMEZONE}
+
+      MYSQL_ROOT_PASSWORD: ${LEANTIME_ROOT_PASSWORD}
+      MYSQL_DATABASE:      ${LEANTIME_DATABASE_NAME}
+      MYSQL_USER:          ${LEANTIME_DATABASE_USER}
+      MYSQL_PASSWORD:      ${LEANTIME_DATABASE_PASSWORD}
+
+    volumes:
+      - leantime_db:/var/lib/mysql
+    
+    networks:
+      - leantime_network
+
+
+  leantime:
+    image: leantime/leantime
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+
+      - "traefik.http.routers.leantime.rule=Host(`${LEANTIME_DOMAIN}`)"
+      - "traefik.http.routers.leantime.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.leantime.middlewares=leantime@docker"
+      - "traefik.http.middlewares.leantime.redirectscheme.scheme=https"
+
+    environment:
+      TZ:                      ${TIMEZONE}
+      
+      LEAN_SITENAME:           KAIZN
+      LEAN_DB_HOST:            leantime_db
+      LEAN_DB_DATABASE:        ${LEANTIME_DATABASE_NAME}
+      LEAN_DB_USER:            ${LEANTIME_DATABASE_USER}
+      LEAN_DB_PASSWORD:        ${LEANTIME_DATABASE_PASSWORD}
+
+      LEAN_DEFAULT_TIMEZONE:   ${TIMEZONE}
+      
+      LEAN_SESSION_PASSWORD:   ${LEANTIME_SESSION_PASSWORD}
+      LEAN_SESSION_EXPIRATION: ${LEANTIME_SESSION_EXPIRATION}
+
+    volumes:
+      - leantime_public_data:/var/www/html/public/userfiles
+      - leantime_data:/var/www/html/userfiles
+
+    networks:
+      - traefik_network
+      - leantime_network
+
+    depends_on:
+      - leantime_db
+      - traefik
+
+
+volumes:
+  leantime_db:
+  leantime_public_data:
+  leantime_data:
+
+
+networks:
+  leantime_network:

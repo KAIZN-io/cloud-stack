@@ -1,0 +1,32 @@
+services:
+
+
+  traefik:
+    command:
+      - "--api.insecure=true"
+
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/.letsencrypt/acme.json"
+
+    ports:
+      - "8080:8080"
+
+  leantime:
+    ports:
+      - "8081:80"
+
+  mattermost:
+    ports:
+      - "8082:8065"
+
+  nextcloud:
+    ports:
+      - "8083:80"

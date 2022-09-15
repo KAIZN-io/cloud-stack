@@ -1,0 +1,74 @@
+services:
+
+
+  mattermost_db:
+    image: postgres
+    restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
+    
+    environment:
+      TZ:                ${TIMEZONE}
+      
+      POSTGRES_DB:       ${MATTERMOST_DATABASE_NAME}
+      POSTGRES_USER:     ${MATTERMOST_DATABASE_USER}
+      POSTGRES_PASSWORD: ${MATTERMOST_DATABASE_PASSWORD}
+    
+    volumes:
+      - mattermost_db:/var/lib/postgresql/data
+
+    networks:
+      - mattermost_network
+
+
+  mattermost:
+    image: mattermost/mattermost-team-edition
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+
+      - "traefik.http.routers.mattermost.rule=Host(`${MATTERMOST_DOMAIN}`)"
+      - "traefik.http.routers.mattermost.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.mattermost.middlewares=mattermost@docker"
+      - "traefik.http.middlewares.mattermost.redirectscheme.scheme=https"
+
+
+    environment:
+      TZ:                        ${TIMEZONE}
+
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://${MATTERMOST_DATABASE_USER}:${MATTERMOST_DATABASE_PASSWORD}@mattermost_db:5432/${MATTERMOST_DATABASE_NAME}?sslmode=disable&connect_timeout=10
+    
+      MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
+
+    volumes:
+      - MATTERMOST_CONFIG_PATH:/mattermost/config:rw
+      - MATTERMOST_DATA_PATH:/mattermost/data:rw
+      - MATTERMOST_LOGS_PATH:/mattermost/logs:rw
+      - MATTERMOST_PLUGINS_PATH:/mattermost/plugins:rw
+      - MATTERMOST_CLIENT_PLUGINS_PATH:/mattermost/client/plugins:rw
+      - MATTERMOST_BLEVE_INDEXES_PATH:/mattermost/bleve-indexes:rw
+
+    networks:
+      - traefik_network
+      - mattermost_network
+
+    depends_on:
+      - mattermost_db
+
+
+volumes:
+  mattermost_db:
+  MATTERMOST_CONFIG_PATH:
+  MATTERMOST_DATA_PATH:
+  MATTERMOST_LOGS_PATH:
+  MATTERMOST_PLUGINS_PATH:
+  MATTERMOST_CLIENT_PLUGINS_PATH:
+  MATTERMOST_BLEVE_INDEXES_PATH:
+
+
+networks:
+  mattermost_network:

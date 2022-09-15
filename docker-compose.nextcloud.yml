@@ -1,0 +1,83 @@
+services:
+
+
+  nextcloud_db:
+    image: postgres
+    restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${NEXTCLOUD_DATABASE_USER}", "-d", "${NEXTCLOUD_DATABASE_NAME}" ]
+
+    environment:
+      TZ: ${TIMEZONE}
+
+      POSTGRES_DB:       ${NEXTCLOUD_DATABASE_NAME}
+      POSTGRES_USER:     ${NEXTCLOUD_DATABASE_USER}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
+
+    volumes:
+      - nextcloud_db:/var/lib/postgresql/data
+
+    networks:
+      - nextcloud_network
+
+
+  nextcloud_cache:
+    image: redis:6-alpine
+    restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
+    environment:
+      TZ: ${TIMEZONE}
+
+    networks:
+      - nextcloud_network
+
+
+  nextcloud:
+    image: nextcloud:22-apache
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+
+      - "traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nextcloud.middlewares=nextcloud@docker"
+      - "traefik.http.middlewares.nextcloud.redirectscheme.scheme=https"
+
+    environment:
+      TZ: ${TIMEZONE}
+      
+      POSTGRES_HOST:     nextcloud_db
+      POSTGRES_DB:       ${NEXTCLOUD_DATABASE_NAME}
+      POSTGRES_USER:     ${NEXTCLOUD_DATABASE_USER}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
+
+      REDIS_HOST: nextcloud_cache
+
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
+
+    volumes:
+      - nextcloud_data:/var/www/html
+
+    networks:
+      - traefik_network
+      - nextcloud_network
+
+    depends_on:
+      - nextcloud_db
+      - nextcloud_cache
+      - traefik
+
+
+volumes:
+  nextcloud_db:
+  nextcloud_data:
+
+
+networks:
+  nextcloud_network:

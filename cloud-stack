@@ -1,0 +1,17 @@
+#!/bin/bash
+
+. .env
+
+if [ $DEBUG -eq 1 ]; then
+	DEBUG_ARG='-f docker-compose.debug.yml'
+fi
+
+set -x
+
+docker-compose \
+	-f docker-compose.base.yml \
+	-f docker-compose.leantime.yml \
+	-f docker-compose.mattermost.yml \
+	-f docker-compose.nextcloud.yml \
+	$DEBUG_ARG \
+	$@

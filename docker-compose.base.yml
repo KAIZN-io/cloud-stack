@@ -1,0 +1,46 @@
+version: '3.3'
+
+
+services:
+
+  traefik:
+    image: traefik:v2.5
+    restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "traefik", "healthcheck" ]
+
+    command:
+      - "--api.insecure=true"
+
+      - "--ping"
+
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/.letsencrypt/acme.json"
+
+    environment:
+      TZ: ${TIMEZONE}
+
+    volumes:
+      - "./services/traefik/mounts/.letsencrypt:/.letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+    networks:
+      - traefik_network
+
+    ports:
+      # - "80:80"
+      # - "443:443"
+      - "8080:8080"
+
+
+networks:
+  traefik_network:
