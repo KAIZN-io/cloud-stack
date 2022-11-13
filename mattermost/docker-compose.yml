@@ -19,10 +19,10 @@ services:
       test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
     
     environment:
-      TZ:                ${TZ}
+      TZ: ${TZ}
       
-      POSTGRES_DB:       ${MATTERMOST_DATABASE_NAME}
-      POSTGRES_USER:     ${MATTERMOST_DATABASE_USER}
+      POSTGRES_DB: ${MATTERMOST_DATABASE_NAME}
+      POSTGRES_USER: ${MATTERMOST_DATABASE_USER}
       POSTGRES_PASSWORD: ${MATTERMOST_DATABASE_PASSWORD}
     
     volumes:

@@ -52,19 +52,19 @@ services:
       - "traefik.http.middlewares.nextcloud.redirectscheme.scheme=https"
 
     environment:
-      TZ: ${TIMEZONE}
+      TZ: ${TZ}
       
-      POSTGRES_HOST:     db
-      POSTGRES_DB:       ${NEXTCLOUD_DATABASE_NAME}
-      POSTGRES_USER:     ${NEXTCLOUD_DATABASE_USER}
+      POSTGRES_HOST: nextcloud_db
+      POSTGRES_DB: ${NEXTCLOUD_DATABASE_NAME}
+      POSTGRES_USER: ${NEXTCLOUD_DATABASE_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
 
-      REDIS_HOST: cache
+      REDIS_HOST: nextcloud_cache
 
       NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
 
     volumes:
-      - nextcloud_data:/var/www/html
+      - nextcloud_data:/var/www/html/data
 
     networks:
       - nextcloud_network
