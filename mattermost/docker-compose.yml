@@ -63,12 +63,12 @@ services:
       MM_SERVICESETTINGS_SITEURL: https://${MATTERMOST_DOMAIN}
 
     volumes:
-      - MATTERMOST_CONFIG_PATH:/mattermost/config:rw
-      - MATTERMOST_DATA_PATH:/mattermost/data:rw
-      - MATTERMOST_LOGS_PATH:/mattermost/logs:rw
-      - MATTERMOST_PLUGINS_PATH:/mattermost/plugins:rw
-      - MATTERMOST_CLIENT_PLUGINS_PATH:/mattermost/client/plugins:rw
-      - MATTERMOST_BLEVE_INDEXES_PATH:/mattermost/bleve-indexes:rw
+      - MATTERMOST_CONFIG_PATH:/mattermost/config
+      - MATTERMOST_DATA_PATH:/mattermost/data
+      - MATTERMOST_LOGS_PATH:/mattermost/logs
+      - MATTERMOST_PLUGINS_PATH:/mattermost/plugins
+      - MATTERMOST_CLIENT_PLUGINS_PATH:/mattermost/client/plugins
+      - MATTERMOST_BLEVE_INDEXES_PATH:/mattermost/bleve-indexes
 
     networks:
       - mattermost_network
