@@ -1,5 +1,7 @@
-services:
+version: '3.3'
 
+
+services:
 
   nextcloud_db:
     image: postgres
@@ -9,18 +11,13 @@ services:
       test: [ "CMD", "pg_isready", "-U", "${NEXTCLOUD_DATABASE_USER}", "-d", "${NEXTCLOUD_DATABASE_NAME}" ]
 
     environment:
-      TZ: ${TIMEZONE}
-
+      TZ: ${TZ}
       POSTGRES_DB:       ${NEXTCLOUD_DATABASE_NAME}
       POSTGRES_USER:     ${NEXTCLOUD_DATABASE_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
 
     volumes:
       - nextcloud_db:/var/lib/postgresql/data
-
-    networks:
-      - nextcloud_network
-
 
   nextcloud_cache:
     image: redis:6-alpine
@@ -30,10 +27,7 @@ services:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
 
     environment:
-      TZ: ${TIMEZONE}
-
-    networks:
-      - nextcloud_network
+      TZ: ${TZ}
 
 
   nextcloud:
@@ -52,12 +46,12 @@ services:
     environment:
       TZ: ${TIMEZONE}
       
-      POSTGRES_HOST:     nextcloud_db
+      POSTGRES_HOST:     db
       POSTGRES_DB:       ${NEXTCLOUD_DATABASE_NAME}
       POSTGRES_USER:     ${NEXTCLOUD_DATABASE_USER}
       POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
 
-      REDIS_HOST: nextcloud_cache
+      REDIS_HOST: cache
 
       NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
 
@@ -66,12 +60,10 @@ services:
 
     networks:
       - traefik_network
-      - nextcloud_network
 
     depends_on:
       - nextcloud_db
       - nextcloud_cache
-      - traefik
 
 
 volumes:
@@ -80,4 +72,5 @@ volumes:
 
 
 networks:
-  nextcloud_network:
+  traefik_network:
+    external: true

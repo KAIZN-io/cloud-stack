@@ -1,5 +1,7 @@
-services:
+version: '3.3'
 
+
+services:
 
   mattermost_db:
     image: postgres
@@ -9,7 +11,7 @@ services:
       test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
     
     environment:
-      TZ:                ${TIMEZONE}
+      TZ:                ${TZ}
       
       POSTGRES_DB:       ${MATTERMOST_DATABASE_NAME}
       POSTGRES_USER:     ${MATTERMOST_DATABASE_USER}
@@ -17,10 +19,6 @@ services:
     
     volumes:
       - mattermost_db:/var/lib/postgresql/data
-
-    networks:
-      - mattermost_network
-
 
   mattermost:
     image: mattermost/mattermost-team-edition
@@ -37,7 +35,7 @@ services:
 
 
     environment:
-      TZ:                        ${TIMEZONE}
+      TZ: ${TZ}
 
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: postgres://${MATTERMOST_DATABASE_USER}:${MATTERMOST_DATABASE_PASSWORD}@mattermost_db:5432/${MATTERMOST_DATABASE_NAME}?sslmode=disable&connect_timeout=10
@@ -54,7 +52,6 @@ services:
 
     networks:
       - traefik_network
-      - mattermost_network
 
     depends_on:
       - mattermost_db
@@ -71,4 +68,5 @@ volumes:
 
 
 networks:
-  mattermost_network:
+  traefik_network:
+    external: true
