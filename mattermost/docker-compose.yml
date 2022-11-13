@@ -20,6 +20,10 @@ services:
     volumes:
       - mattermost_db:/var/lib/postgresql/data
 
+    networks:
+      - mattermost_network
+
+
   mattermost:
     image: mattermost/mattermost-team-edition
     restart: unless-stopped
@@ -51,6 +55,7 @@ services:
       - MATTERMOST_BLEVE_INDEXES_PATH:/mattermost/bleve-indexes:rw
 
     networks:
+      - mattermost_network
       - traefik_network
 
     depends_on:
@@ -68,5 +73,6 @@ volumes:
 
 
 networks:
+  mattermost_network:
   traefik_network:
     external: true
