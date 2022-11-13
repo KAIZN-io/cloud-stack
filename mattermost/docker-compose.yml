@@ -60,6 +60,8 @@ services:
     
       MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
 
+      MM_SERVICESETTINGS_SITEURL: https://${MATTERMOST_DOMAIN}
+
     volumes:
       - MATTERMOST_CONFIG_PATH:/mattermost/config:rw
       - MATTERMOST_DATA_PATH:/mattermost/data:rw
