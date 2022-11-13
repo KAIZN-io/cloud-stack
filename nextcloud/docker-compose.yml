@@ -3,6 +3,7 @@ version: '3.3'
 
 services:
 
+
   nextcloud_db:
     image: postgres
     restart: unless-stopped

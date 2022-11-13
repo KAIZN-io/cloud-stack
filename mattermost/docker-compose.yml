@@ -3,6 +3,7 @@ version: '3.3'
 
 services:
 
+
   mattermost_db:
     image: postgres
     restart: unless-stopped
