@@ -7,6 +7,13 @@ services:
     image: postgres
     restart: unless-stopped
 
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
     
@@ -27,6 +34,12 @@ services:
   mattermost:
     image: mattermost/mattermost-team-edition
     restart: unless-stopped
+  
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    tmpfs:
+      - /tmp
 
     labels:
       - "traefik.enable=true"
