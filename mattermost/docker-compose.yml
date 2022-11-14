@@ -17,14 +17,14 @@ services:
 
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
-    
+
     environment:
       TZ: ${TZ}
-      
+
       POSTGRES_DB: ${MATTERMOST_DATABASE_NAME}
       POSTGRES_USER: ${MATTERMOST_DATABASE_USER}
       POSTGRES_PASSWORD: ${MATTERMOST_DATABASE_PASSWORD}
-    
+
     volumes:
       - mattermost_db:/var/lib/postgresql/data
 
@@ -35,7 +35,7 @@ services:
   mattermost:
     image: mattermost/mattermost-team-edition:release-7.5
     restart: unless-stopped
-  
+
     security_opt:
       - no-new-privileges:true
     pids_limit: 200
@@ -62,7 +62,7 @@ services:
 
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: postgres://${MATTERMOST_DATABASE_USER}:${MATTERMOST_DATABASE_PASSWORD}@mattermost_db:5432/${MATTERMOST_DATABASE_NAME}?sslmode=disable&connect_timeout=10
-    
+
       MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
 
       MM_SERVICESETTINGS_SITEURL: https://${MATTERMOST_DOMAIN}
