@@ -20,7 +20,7 @@ services:
 
     volumes:
       - nextcloud_db:/var/lib/postgresql/data
-    
+
     networks:
       - nextcloud_network
 
@@ -38,6 +38,7 @@ services:
     networks:
       - nextcloud_network
 
+
   nextcloud_nginx:
     image: nginx:1.23-alpine
     restart: unless-stopped
@@ -50,15 +51,15 @@ services:
       - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
       - "traefik.http.routers.nextcloud.middlewares=nextcloud@docker"
       - "traefik.http.middlewares.nextcloud.redirectscheme.scheme=https"
-    
+
     volumes:
       - ./volumes/nginx.conf:/etc/nginx/nginx.conf:ro
       - nextcloud_data:/var/www/html
-    
+
     networks:
       - nextcloud_network
       - traefik_network
-    
+
     ports:
       - 8888:80
 
@@ -67,10 +68,9 @@ services:
     image: nextcloud:25-fpm-alpine
     restart: unless-stopped
 
-
     environment:
       TZ: ${TZ}
-      
+
       POSTGRES_HOST: nextcloud_db
       POSTGRES_DB: ${NEXTCLOUD_DATABASE_NAME}
       POSTGRES_USER: ${NEXTCLOUD_DATABASE_USER}
