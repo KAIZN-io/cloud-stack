@@ -46,11 +46,16 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_network"
 
-      - "traefik.http.routers.mattermost.rule=Host(`${MATTERMOST_DOMAIN}`)"
-      - "traefik.http.routers.mattermost.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.mattermost.middlewares=mattermost@docker"
-      - "traefik.http.middlewares.mattermost.redirectscheme.scheme=https"
+      - "traefik.http.routers.mattermost-https.entrypoints=https"
+      - "traefik.http.routers.mattermost-https.rule=Host(`${MATTERMOST_DOMAIN}`)"
+      - "traefik.http.routers.mattermost-https.tls.certresolver=letsencrypt"
 
+      - "traefik.http.middlewares.mattermost-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.mattermost-https.redirectscheme.permanent=true"
+
+      - "traefik.http.routers.mattermost-http.entrypoints=http"
+      - "traefik.http.routers.mattermost-http.rule=Host(`${MATTERMOST_DOMAIN}`)"
+      - "traefik.http.routers.mattermost-http.middlewares=mattermost-https"
 
     environment:
       TZ: ${TZ}
