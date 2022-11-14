@@ -1,0 +1,44 @@
+version: '3.3'
+
+
+services:
+
+
+  collabora:
+    image: collabora/code:22.05.8.2.1
+    restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+
+      - "traefik.http.routers.collabora-https.entrypoints=https"
+      - "traefik.http.routers.collabora-https.rule=Host(`${COLLABORA_DOMAIN}`)"
+      - "traefik.http.routers.collabora-https.tls.certresolver=letsencrypt"
+
+      - "traefik.http.middlewares.collabora-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.collabora-https.redirectscheme.permanent=true"
+
+      - "traefik.http.routers.collabora-http.entrypoints=http"
+      - "traefik.http.routers.collabora-http.rule=Host(`${COLLABORA_DOMAIN}`)"
+      - "traefik.http.routers.collabora-http.middlewares=collabora-https"
+
+
+    environment:
+      TZ: ${TZ}
+
+      username: ${COLLABORA_ADMIN_USER}
+      password: ${COLLABORA_ADMIN_PASSWORD}
+
+      dictionaries: ${COLLABORA_DICTIONARIES}
+
+      aliasgroup1: https://${COLLABORA_NEXTCLOUD_DOMAIN}:443
+      extra_params: --o:ssl.enable=false
+
+    networks:
+      - traefik_network
+
+
+networks:
+  traefik_network:
+    external: true
