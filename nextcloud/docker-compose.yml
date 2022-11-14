@@ -84,7 +84,11 @@ services:
 
       REDIS_HOST: nextcloud_cache
 
+      TRUSTED_PROXIES: ${TRAEFIK_CIDR}
       NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
+      OVERWRITEPROTOCOL: https
+      OVERWRITECLIURL: https://${NEXTCLOUD_DOMAIN}
+      OVERWRITEHOST: ${NEXTCLOUD_DOMAIN}
 
     volumes:
       - nextcloud_data:/var/www/html
