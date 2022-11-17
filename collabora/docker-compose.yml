@@ -33,7 +33,7 @@ services:
       dictionaries: ${COLLABORA_DICTIONARIES}
 
       aliasgroup1: https://${COLLABORA_NEXTCLOUD_DOMAIN}:443
-      extra_params: --o:ssl.enable=false
+      extra_params: --o:ssl.enable=false --o:ssl.termination=true
 
     networks:
       - traefik_network
