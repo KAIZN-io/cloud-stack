@@ -12,6 +12,7 @@ services:
 
     command:
       # - "--api.insecure=true"
+      # - "--log.level=DEBUG"
 
       - "--ping"
 
