@@ -17,3 +17,4 @@ docker/*/mount
 services/
 acme.json
 .letsencrypt
+usersfile
