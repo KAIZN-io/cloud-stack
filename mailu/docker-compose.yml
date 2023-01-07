@@ -1,0 +1,104 @@
+version: '3.3'
+
+
+services:
+
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
+    environment:
+      TZ: ${TZ}
+
+
+  mailu:
+    image: mailu/nginx:${VERSION:-1.9}
+    restart: unless-stopped
+    env_file: mailu.env
+
+    healthcheck:
+      test: ['ls']
+
+    ports:
+      - "${HOST_IP}:25:25"
+      - "${HOST_IP}:465:465"
+      - "${HOST_IP}:587:587"
+      - "${HOST_IP}:110:110"
+      - "${HOST_IP}:995:995"
+      - "${HOST_IP}:143:143"
+      - "${HOST_IP}:993:993"
+
+    volumes:
+      - "./volumes/mailu/certs:/certs"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_network"
+
+      # We are using a TCP router here, so the container can manage it's SSL on its own.
+      - "traefik.tcp.routers.mailu-tcp.rule=HostSNI(`${HOST_NAME}`)"
+      - "traefik.tcp.routers.mailu-tcp.tls=true"
+      - "traefik.tcp.routers.mailu-tcp.tls.passthrough=true"
+      - "traefik.tcp.services.mailu-tcp.loadbalancer.server.port=443"
+
+    networks:
+      - default
+      - traefik_network
+
+
+  admin:
+    image: mailu/admin:${VERSION:-1.9}
+    restart: unless-stopped
+    env_file: mailu.env
+
+    volumes:
+      - "./volumes/mailu/data:/data"
+      - "./volumes/mailu/dkim:/dkim"
+
+    depends_on:
+      - cache
+
+
+  imap:
+    image: mailu/dovecot:${VERSION:-1.9}
+    restart: unless-stopped
+    env_file: mailu.env
+
+    volumes:
+      - "./volumes/mailu/mail:/mail"
+
+    depends_on:
+      - mailu
+
+
+  smtp:
+    image: mailu/postfix:${VERSION:-1.9}
+    restart: unless-stopped
+    env_file: mailu.env
+
+    volumes:
+      - "./volumes/mailu/mailqueue:/queue"
+
+    depends_on:
+      - mailu
+
+
+  antispam:
+    image: mailu/rspamd:${VERSION:-1.9}
+    restart: unless-stopped
+    env_file: mailu.env
+
+    volumes:
+      - "./volumes/mailu/filter:/var/lib/rspamd"
+
+    depends_on:
+      - mailu
+
+
+networks:
+  traefik_network:
+    external: true

@@ -15,6 +15,7 @@ env/
 env*
 docker/*/mount
 services/
+volumes/
 acme.json
 .letsencrypt
 usersfile
