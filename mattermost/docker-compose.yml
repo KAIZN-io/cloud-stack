@@ -18,6 +18,9 @@ services:
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${DATABASE_USER}", "-d", "${DATABASE_NAME}" ]
 
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
+
     environment:
       TZ: ${TZ}
 
@@ -53,6 +56,8 @@ services:
       - "traefik.http.routers.mattermost-http.entrypoints=http"
       - "traefik.http.routers.mattermost-http.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.mattermost-http.middlewares=mattermost-https"
+
+      - 'com.centurylinklabs.watchtower.enable=true'
 
     environment:
       TZ: ${TZ}
