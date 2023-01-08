@@ -4,7 +4,7 @@ version: '3.3'
 services:
 
   traefik:
-    image: traefik:2.9
+    image: traefik:${TREAFIK_TAG}
     restart: unless-stopped
 
     command:
@@ -21,9 +21,6 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/.letsencrypt/acme.json"
 
-    environment:
-      TZ: ${TZ}
-
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_network"
@@ -34,14 +31,17 @@ services:
 
       - "traefik.http.routers.traefik-https.service=api@internal"
 
-      - "traefik.http.middlewares.traefik-auth.basicauth.usersfile=/usersfile"
+      - "traefik.http.middlewares.traefik-auth.basicauth.usersfile=/.htpasswd"
       - "traefik.http.routers.traefik-https.middlewares=traefik-auth"
 
       - 'com.centurylinklabs.watchtower.enable=true'
 
+    environment:
+      TZ: ${TZ}
+
     volumes:
+      - ./.htpasswd:/.htpasswd
       - ./volumes/.letsencrypt/acme.json:/.letsencrypt/acme.json
-      - ./usersfile:/usersfile
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
     networks:

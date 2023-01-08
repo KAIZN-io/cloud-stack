@@ -13,6 +13,7 @@
 .env
 env/
 env*
+.htpasswd
 docker/*/mount
 services/
 volumes/
