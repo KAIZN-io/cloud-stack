@@ -5,7 +5,7 @@ services:
 
 
   collabora:
-    image: collabora/code:22.05.8.2.1
+    image: collabora/code:${COLLABORA_TAG}
     restart: unless-stopped
 
     labels:
@@ -23,7 +23,6 @@ services:
       - "traefik.http.routers.collabora-http.rule=Host(`${COLLABORA_DOMAIN}`)"
       - "traefik.http.routers.collabora-http.middlewares=collabora-https"
 
-
     environment:
       TZ: ${TZ}
 
@@ -32,33 +31,33 @@ services:
 
       dictionaries: ${COLLABORA_DICTIONARIES}
 
-      aliasgroup1: https://${NEXTCLOUD_DOMAIN}:443
+      aliasgroup1: https://${DOMAIN}:443
       extra_params: --o:ssl.enable=false --o:ssl.termination=true
 
     networks:
       - traefik_network
 
 
-  nextcloud_db:
-    image: postgres:14-alpine
+  database:
+    image: postgres:${DATABAE_TAG}
     restart: unless-stopped
 
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${NEXTCLOUD_DATABASE_USER}", "-d", "${NEXTCLOUD_DATABASE_NAME}" ]
+      test: [ "CMD", "pg_isready", "-U", "${DATABASE_USER}", "-d", "${DATABASE_NAME}" ]
 
     environment:
       TZ: ${TZ}
 
-      POSTGRES_DB: ${NEXTCLOUD_DATABASE_NAME}
-      POSTGRES_USER: ${NEXTCLOUD_DATABASE_USER}
-      POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
     volumes:
-      - nextcloud_db:/var/lib/postgresql/data
+      - ${DATABASE_VOLUME}:/var/lib/postgresql/data
 
 
-  nextcloud_cache:
-    image: redis:7-alpine
+  cache:
+    image: redis:${CACHE_TAG}
     restart: unless-stopped
 
     healthcheck:
@@ -68,8 +67,8 @@ services:
       TZ: ${TZ}
 
 
-  nextcloud_nginx:
-    image: nginx:1.23-alpine
+  nginx:
+    image: nginx:${NGINX_TAG}
     restart: unless-stopped
 
     labels:
@@ -77,57 +76,53 @@ services:
       - "traefik.docker.network=traefik_network"
 
       - "traefik.http.routers.nextcloud-https.entrypoints=https"
-      - "traefik.http.routers.nextcloud-https.rule=Host(`${NEXTCLOUD_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-https.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.nextcloud-https.tls.certresolver=letsencrypt"
 
       - "traefik.http.middlewares.nextcloud-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.nextcloud-https.redirectscheme.permanent=true"
 
       - "traefik.http.routers.nextcloud-http.entrypoints=http"
-      - "traefik.http.routers.nextcloud-http.rule=Host(`${NEXTCLOUD_DOMAIN}`)"
+      - "traefik.http.routers.nextcloud-http.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.nextcloud-http.middlewares=nextcloud-https"
 
     volumes:
-      - ./volumes/nginx.conf:/etc/nginx/nginx.conf:ro
-      - nextcloud_data:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${VOLUME}:/var/www/html
 
     networks:
+      - default
       - traefik_network
 
 
   nextcloud:
-    image: nextcloud:25-fpm-alpine
+    image: nextcloud:${TAG}
     restart: unless-stopped
 
     environment:
       TZ: ${TZ}
 
-      POSTGRES_HOST: nextcloud_db
-      POSTGRES_DB: ${NEXTCLOUD_DATABASE_NAME}
-      POSTGRES_USER: ${NEXTCLOUD_DATABASE_USER}
-      POSTGRES_PASSWORD: ${NEXTCLOUD_DATABASE_PASSWORD}
+      POSTGRES_HOST: database
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
-      REDIS_HOST: nextcloud_cache
+      REDIS_HOST: cache
 
       TRUSTED_PROXIES: ${TRAEFIK_CIDR}
-      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${DOMAIN}
       OVERWRITEPROTOCOL: https
-      OVERWRITECLIURL: https://${NEXTCLOUD_DOMAIN}
-      OVERWRITEHOST: ${NEXTCLOUD_DOMAIN}
+      OVERWRITECLIURL: https://${DOMAIN}
+      OVERWRITEHOST: ${DOMAIN}
 
     volumes:
-      - nextcloud_data:/var/www/html
+      - ${VOLUME}:/var/www/html
 
     depends_on:
       - collabora
-      - nextcloud_db
-      - nextcloud_cache
-      - nextcloud_nginx
-
-
-volumes:
-  nextcloud_db:
-  nextcloud_data:
+      - database
+      - cache
+      - nginx
 
 
 networks:
