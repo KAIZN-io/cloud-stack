@@ -4,9 +4,9 @@ version: '3.3'
 services:
 
   watchtower:
-    image: containrrr/watchtower
+    image: containrrr/watchtower:${WATCHTOWER_TAG}
     restart: unless-stopped
-    
+
     command:
       - '--label-enable'
       - '--cleanup'
