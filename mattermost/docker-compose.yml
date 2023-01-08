@@ -4,8 +4,8 @@ version: '3.3'
 services:
 
 
-  mattermost_db:
-    image: postgres:14-alpine
+  database:
+    image: postgres:${DATABASE_TAG}
     restart: unless-stopped
 
     security_opt:
@@ -16,21 +16,21 @@ services:
       - /var/run/postgresql
 
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${MATTERMOST_DATABASE_USER}", "-d", "${MATTERMOST_DATABASE_NAME}" ]
+      test: [ "CMD", "pg_isready", "-U", "${DATABASE_USER}", "-d", "${DATABASE_NAME}" ]
 
     environment:
       TZ: ${TZ}
 
-      POSTGRES_DB: ${MATTERMOST_DATABASE_NAME}
-      POSTGRES_USER: ${MATTERMOST_DATABASE_USER}
-      POSTGRES_PASSWORD: ${MATTERMOST_DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
     volumes:
-      - mattermost_db:/var/lib/postgresql/data
+      - ${DATABASE_VOLUME}:/var/lib/postgresql/data
 
 
   mattermost:
-    image: mattermost/mattermost-team-edition:release-7.5
+    image: mattermost/mattermost-team-edition:${TAG}
     restart: unless-stopped
 
     security_opt:
@@ -44,49 +44,40 @@ services:
       - "traefik.docker.network=traefik_network"
 
       - "traefik.http.routers.mattermost-https.entrypoints=https"
-      - "traefik.http.routers.mattermost-https.rule=Host(`${MATTERMOST_DOMAIN}`)"
+      - "traefik.http.routers.mattermost-https.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.mattermost-https.tls.certresolver=letsencrypt"
 
       - "traefik.http.middlewares.mattermost-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.mattermost-https.redirectscheme.permanent=true"
 
       - "traefik.http.routers.mattermost-http.entrypoints=http"
-      - "traefik.http.routers.mattermost-http.rule=Host(`${MATTERMOST_DOMAIN}`)"
+      - "traefik.http.routers.mattermost-http.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.mattermost-http.middlewares=mattermost-https"
 
     environment:
       TZ: ${TZ}
 
       MM_SQLSETTINGS_DRIVERNAME: postgres
-      MM_SQLSETTINGS_DATASOURCE: postgres://${MATTERMOST_DATABASE_USER}:${MATTERMOST_DATABASE_PASSWORD}@mattermost_db:5432/${MATTERMOST_DATABASE_NAME}?sslmode=disable&connect_timeout=10
+      MM_SQLSETTINGS_DATASOURCE: postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@database:5432/${DATABASE_NAME}?sslmode=disable&connect_timeout=10
 
       MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
 
-      MM_SERVICESETTINGS_SITEURL: https://${MATTERMOST_DOMAIN}
+      MM_SERVICESETTINGS_SITEURL: https://${DOMAIN}
 
     volumes:
-      - MATTERMOST_CONFIG_PATH:/mattermost/config
-      - MATTERMOST_DATA_PATH:/mattermost/data
-      - MATTERMOST_LOGS_PATH:/mattermost/logs
-      - MATTERMOST_PLUGINS_PATH:/mattermost/plugins
-      - MATTERMOST_CLIENT_PLUGINS_PATH:/mattermost/client/plugins
-      - MATTERMOST_BLEVE_INDEXES_PATH:/mattermost/bleve-indexes
+      - ${MATTERMOST_VOLUME}/config:/mattermost/config
+      - ${MATTERMOST_VOLUME}/data:/mattermost/data
+      - ${MATTERMOST_VOLUME}/logs:/mattermost/logs
+      - ${MATTERMOST_VOLUME}/plugins:/mattermost/plugins
+      - ${MATTERMOST_VOLUME}/client/plugins:/mattermost/client/plugins
+      - ${MATTERMOST_VOLUME}/bleve-indexes:/mattermost/bleve-indexes
 
     networks:
+      - default
       - traefik_network
 
     depends_on:
-      - mattermost_db
-
-
-volumes:
-  mattermost_db:
-  MATTERMOST_CONFIG_PATH:
-  MATTERMOST_DATA_PATH:
-  MATTERMOST_LOGS_PATH:
-  MATTERMOST_PLUGINS_PATH:
-  MATTERMOST_CLIENT_PLUGINS_PATH:
-  MATTERMOST_BLEVE_INDEXES_PATH:
+      - database
 
 
 networks:
