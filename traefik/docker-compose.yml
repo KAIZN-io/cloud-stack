@@ -4,7 +4,7 @@ version: '3.3'
 services:
 
   traefik:
-    image: traefik:${TREAFIK_TAG}
+    image: traefik:${TAG}
     restart: unless-stopped
 
     command:
@@ -26,7 +26,7 @@ services:
       - "traefik.docker.network=traefik_network"
 
       - "traefik.http.routers.traefik-https.entrypoints=https"
-      - "traefik.http.routers.traefik-https.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.traefik-https.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.traefik-https.tls.certresolver=letsencrypt"
 
       - "traefik.http.routers.traefik-https.service=api@internal"
