@@ -110,7 +110,12 @@ services:
     restart: unless-stopped
 
     labels:
-      - 'com.centurylinklabs.watchtower.enable=true'
+      com.centurylinklabs.watchtower.enable: "true"
+
+      ofelia.enabled: "true"
+      ofelia.job-exec.nextcloud.schedule: "@every 5m"
+      ofelia.job-exec.nextcloud.user: "www-data"
+      ofelia.job-exec.nextcloud.command: "php -f /var/www/html/cron.php"
 
     environment:
       TZ: ${TZ}
