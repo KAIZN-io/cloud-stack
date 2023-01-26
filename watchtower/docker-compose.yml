@@ -10,7 +10,7 @@ services:
     command:
       - '--label-enable'
       - '--cleanup'
-      - '--interval ${POLL_INTERVAL}'
+      - '--interval=${POLL_INTERVAL}'
 
     labels:
       - 'com.centurylinklabs.watchtower.enable=true'
