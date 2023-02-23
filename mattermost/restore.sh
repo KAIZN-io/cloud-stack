@@ -24,8 +24,7 @@
 ./manage.sh mattermost cp ./backup/data mattermost:/mattermost
 
 # Set the correct permissions
-./manage.sh mattermost run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/config/config.json
-./manage.sh mattermost run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/data
+./manage.sh mattermost run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/
 
 
 ################################################################################
