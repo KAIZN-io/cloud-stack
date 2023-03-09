@@ -1,18 +1,31 @@
 #!/bin/bash
 
 
+service_name="nextcloud"
+manage_script="${PWD}/manage.sh"
+service_root="${PWD}/${service_name}"
+backup_dir="${PWD}/${service_name}/backups/backup_`date +"%Y-%m-%d_%H%I%S"`"
+
+
+# Make sure this script is called from the repository root.
+if [ ! -f  "${manage_script}" ]; then
+    echo "Please call this script form the repository root."
+    exit 1
+fi
+
+
 ################################################################################
 # PREPARATIONS                                                                 #
 ################################################################################
 
 # Loading env variables
-. ./nextcloud/.env
+. ${service_root}/.env
 
 # Delete the old backup to not mix any data
-rm -rf ./backup
+rm -rf ${backup_dir}
 
 # Creating required folders
-mkdir -p ./backup
+mkdir -p ${backup_dir}
 
 
 ################################################################################
@@ -20,9 +33,9 @@ mkdir -p ./backup
 ################################################################################
 
 # Copying files from inside the docker container
-./manage.sh nextcloud cp nextcloud:/var/www/html/config ./backup
-./manage.sh nextcloud cp nextcloud:/var/www/html/data   ./backup
-./manage.sh nextcloud cp nextcloud:/var/www/html/themes ./backup
+${manage_script} ${service_name} cp nextcloud:/var/www/html/config ${backup_dir}
+${manage_script} ${service_name} cp nextcloud:/var/www/html/data   ${backup_dir}
+${manage_script} ${service_name} cp nextcloud:/var/www/html/themes ${backup_dir}
 
 
 ################################################################################
@@ -30,7 +43,7 @@ mkdir -p ./backup
 ################################################################################
 
 # Backing up the Database
-./manage.sh exec --no-TTY database pg_dump \
+${manage_script} ${service_name} exec --no-TTY database pg_dump \
   --role=${DATABASE_USER} \
 	--username=${DATABASE_USER} \
 	--dbname=${DATABASE_NAME} \
@@ -38,4 +51,4 @@ mkdir -p ./backup
 	--no-security-labels \
   --no-owner \
   --verbose \
-	> ./backup/dump.sql
+	> ${backup_dir}/dump_${service_name}_`date +"%Y-%m-%d_%H%I%S"`.sql
