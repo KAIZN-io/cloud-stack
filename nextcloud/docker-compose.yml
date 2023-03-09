@@ -58,7 +58,7 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
     volumes:
-      - ${DATABASE_VOLUME}:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
 
 
   cache:
@@ -98,7 +98,10 @@ services:
 
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ${VOLUME}:/var/www/html
+      - nextcloud:/var/www/html
+      - ${DATA_PATH}/config:/var/www/html/config
+      - ${DATA_PATH}/data:/var/www/html/data
+      - ${DATA_PATH}/themes:/var/www/html/themes
 
     networks:
       - default
@@ -134,13 +137,21 @@ services:
       OVERWRITEHOST: ${DOMAIN}
 
     volumes:
-      - ${VOLUME}:/var/www/html
+      - nextcloud:/var/www/html
+      - ${DATA_PATH}/config:/var/www/html/config
+      - ${DATA_PATH}/data:/var/www/html/data
+      - ${DATA_PATH}/themes:/var/www/html/themes
 
     depends_on:
       - collabora
       - database
       - cache
       - nginx
+
+
+volumes:
+  database:
+  nextcloud:
 
 
 networks:

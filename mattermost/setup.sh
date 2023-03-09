@@ -4,4 +4,4 @@
 . .env
 . ../.env
 
-chown -R 2000:2000 ${MATTERMOST_VOLUME}
+chown -R 2000:2000 ${DATA_PATH}

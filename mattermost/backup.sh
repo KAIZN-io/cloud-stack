@@ -13,7 +13,6 @@ rm -rf ./backup
 
 # Creating required folders
 mkdir -p ./backup
-mkdir -p ./backup/client
 
 
 ################################################################################
