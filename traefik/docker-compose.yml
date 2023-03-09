@@ -22,19 +22,19 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.storage=/.letsencrypt/acme.json"
 
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik_network"
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_network"
 
-      - "traefik.http.routers.traefik-https.entrypoints=https"
-      - "traefik.http.routers.traefik-https.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.traefik-https.tls.certresolver=letsencrypt"
+      traefik.http.routers.traefik-https.entrypoints: "https"
+      traefik.http.routers.traefik-https.rule: "Host(`${DOMAIN}`)"
+      traefik.http.routers.traefik-https.tls.certresolver: "letsencrypt"
 
-      - "traefik.http.routers.traefik-https.service=api@internal"
+      traefik.http.routers.traefik-https.service: "api@internal"
 
-      - "traefik.http.middlewares.traefik-auth.basicauth.usersfile=/.htpasswd"
-      - "traefik.http.routers.traefik-https.middlewares=traefik-auth"
+      traefik.http.middlewares.traefik-auth.basicauth.usersfile: "/.htpasswd"
+      traefik.http.routers.traefik-https.middlewares: "traefik-auth"
 
-      - 'com.centurylinklabs.watchtower.enable=true'
+      com.centurylinklabs.watchtower.enable: "true"
 
     environment:
       TZ: ${TZ}

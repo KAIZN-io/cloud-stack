@@ -13,7 +13,7 @@ services:
       - '--schedule=${SCHEDULE}'
 
     labels:
-      - 'com.centurylinklabs.watchtower.enable=true'
+      com.centurylinklabs.watchtower.enable: "true"
 
     environment:
       TZ: ${TZ}
