@@ -1,15 +1,45 @@
 #!/bin/bash
 
 
+service_name="mattermost"
+manage_script="${PWD}/manage.sh"
+service_root="${PWD}/${service_name}"
+backups_dir="${PWD}/${service_name}/backups"
+
+
+# Make sure this script is called from the repository root.
+if [ ! -f  "${manage_script}" ]; then
+    echo "Please call this script form the repository root."
+    exit 1
+fi
+
+
+# Make sure there are acutally some backups to choose from.
+if [ ! -d  "${backups_dir}" ]; then
+    echo "No backups found."
+    exit 0
+fi
+
+if [ -z "$(ls -A ${backups_dir})" ]; then
+    echo "No backups found."
+    exit 0
+fi
+
+printf "Please select backup:\n"
+select selected_backup_dir in ${backups_dir}/*; do test -n "${selected_backup_dir}" && break; echo ">>> Invalid Selection"; done
+
+selected_database_dump=`find ${selected_backup_dir} -name "*.sql"`
+
+
 ################################################################################
 # PREPARATIONS                                                                 #
 ################################################################################
 
 # Loading env variables
-. ./mattermost/.env
+. ${service_root}/.env
 
 # Stopping and removing everything that might still be running
-./manage.sh mattermost down -v
+${manage_script} ${service_name} down -v
 
 
 ################################################################################
@@ -17,14 +47,14 @@
 ################################################################################
 
 # Create a fresh mattermost container
-./manage.sh mattermost create mattermost
+${manage_script} ${service_name} create mattermost
 
 # Copying files into the mattermost container
-./manage.sh mattermost cp ./backup/config/config.json mattermost:/mattermost/config/config.json
-./manage.sh mattermost cp ./backup/data mattermost:/mattermost
+${manage_script} ${service_name} cp ${selected_backup_dir}/config mattermost:/mattermost
+${manage_script} ${service_name} cp ${selected_backup_dir}/data   mattermost:/mattermost
 
 # Set the correct permissions
-./manage.sh mattermost run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/
+${manage_script} ${service_name} run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/
 
 
 ################################################################################
@@ -32,10 +62,10 @@
 ################################################################################
 
 # Start the database up again
-./manage.sh mattermost up -d database
+${manage_script} ${service_name} up -d database
 
 # Restore the database
-./manage.sh mattermost exec --no-TTY database pg_restore \
+${manage_script} ${service_name} exec --no-TTY database pg_restore \
   --role=${DATABASE_USER} \
   --username=${DATABASE_USER} \
   --dbname=${DATABASE_NAME} \
@@ -43,7 +73,7 @@
   --no-security-labels \
   --no-owner \
   --verbose \
-  < ./mattermost/backup/dump.sql
+  < ${selected_database_dump}
 
 
 ################################################################################
@@ -51,4 +81,4 @@
 ################################################################################
 
 # Start everything up again
-./manage.sh mattermost up -d
+${manage_script} ${service_name} up -d
