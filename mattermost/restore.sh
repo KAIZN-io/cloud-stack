@@ -50,8 +50,8 @@ ${manage_script} ${service_name} down -v
 ${manage_script} ${service_name} create mattermost
 
 # Copying files into the mattermost container
-${manage_script} ${service_name} cp ${selected_backup_dir}/config mattermost:/mattermost
-${manage_script} ${service_name} cp ${selected_backup_dir}/data   mattermost:/mattermost
+${manage_script} ${service_name} cp ${selected_backup_dir}/mattermost/config mattermost:/mattermost/
+${manage_script} ${service_name} cp ${selected_backup_dir}/mattermost/data   mattermost:/mattermost/
 
 # Set the correct permissions
 ${manage_script} ${service_name} run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/
