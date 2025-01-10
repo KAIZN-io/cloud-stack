@@ -49,14 +49,11 @@ ${manage_script} ${service_name} down -v
 # Create a fresh mattermost container
 ${manage_script} ${service_name} create mattermost
 
-${manage_script} ${service_name} run --rm --user root mattermost ls -la /mattermost/
-
 # Copying files into the mattermost container
 ${manage_script} ${service_name} cp ${selected_backup_dir}/mattermost/config mattermost:/mattermost/
 ${manage_script} ${service_name} cp ${selected_backup_dir}/mattermost/data   mattermost:/mattermost/
 
 # Set the correct permissions
-${manage_script} ${service_name} run --rm --user root mattermost ls -la /mattermost/
 ${manage_script} ${service_name} run --rm --user root mattermost chown -R mattermost:mattermost /mattermost/
 
 
@@ -85,3 +82,4 @@ ${manage_script} ${service_name} exec --no-TTY database pg_restore \
 
 # Start everything up again
 ${manage_script} ${service_name} up -d
+
