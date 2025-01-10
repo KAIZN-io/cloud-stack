@@ -20,3 +20,5 @@ volumes/
 acme.json
 .letsencrypt
 usersfile
+backups/
+

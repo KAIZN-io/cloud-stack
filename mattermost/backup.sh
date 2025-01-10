@@ -4,7 +4,7 @@
 service_name="mattermost"
 manage_script="${PWD}/manage.sh"
 service_root="${PWD}/${service_name}"
-backup_dir="${PWD}/${service_name}/backups/backup_`date +"%Y-%m-%d_%H%I%S"`"
+backup_dir="${PWD}/${service_name}/backups/backup_`date +"%Y-%m-%d_%H%M%S"`"
 
 
 # Make sure this script is called from the repository root.
@@ -21,11 +21,8 @@ fi
 # Loading env variables
 . ${service_root}/.env
 
-# Delete the old backup to not mix any data
-rm -rf ${backup_dir}
-
 # Creating required folders
-mkdir -p ${backup_dir}
+mkdir -p ${backup_dir}/mattermost/
 
 
 ################################################################################
@@ -33,8 +30,8 @@ mkdir -p ${backup_dir}
 ################################################################################
 
 # Copying files from inside the docker container
-${manage_script} ${service_name} cp mattermost:/mattermost/config ${backup_dir}
-${manage_script} ${service_name} cp mattermost:/mattermost/data   ${backup_dir}
+${manage_script} ${service_name} cp mattermost:/mattermost/config ${backup_dir}/mattermost/
+${manage_script} ${service_name} cp mattermost:/mattermost/data   ${backup_dir}/mattermost/
 
 
 ################################################################################
@@ -50,4 +47,4 @@ ${manage_script} ${service_name} exec --no-TTY database pg_dump \
 	--no-security-labels \
   --no-owner \
   --verbose \
-	> ${backup_dir}/dump_${service_name}_`date +"%Y-%m-%d_%H%I%S"`.sql
+	> ${backup_dir}/dump_${service_name}_`date +"%Y-%m-%d_%H%M%S"`.sql
